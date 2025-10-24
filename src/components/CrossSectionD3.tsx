@@ -26,10 +26,7 @@ export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
     const ref = useRef<SVGSVGElement>(null);
 
     const dataGrids : CrossSectionData = useMemo(() => {
-        //const source = generateExampleTrajectoryCovJSON();
-
         const parameterName = Object.keys(data.parameters)[0];
-        console.log('parameter', parameterName)
 
         const values : Value[] = data.coverages.flatMap((cov) => {
             const range = cov.ranges[parameterName];

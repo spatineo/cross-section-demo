@@ -40,9 +40,6 @@ export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: s
             qs.append('z', selectedInstance.extent.vertical.values.join(','))
             qs.append('f', 'CoverageJSON')
 
-            console.log(qs.toString());
-
-
             const trajectoryResponse = await fetch(`${baseurl}/instances/${selectedInstance.id}/trajectory?${qs.toString()}`)
             const trajectory = await trajectoryResponse.json();
 
