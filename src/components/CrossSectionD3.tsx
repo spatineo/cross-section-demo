@@ -17,16 +17,21 @@ interface CrossSectionData {
     featureCollection: FeatureCollection 
 }
 
-export const CrossSectionD3 = () => {
+interface CrossSectionD3Props {
+    data: ReturnType<typeof generateExampleTrajectoryCovJSON>,
+    isLoading: boolean
+}
+
+export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
     const ref = useRef<SVGSVGElement>(null);
 
     const dataGrids : CrossSectionData = useMemo(() => {
-        const source = generateExampleTrajectoryCovJSON();
+        //const source = generateExampleTrajectoryCovJSON();
 
-        const parameterName = Object.keys(source.parameters)[0];
+        const parameterName = Object.keys(data.parameters)[0];
         console.log('parameter', parameterName)
 
-        const values : Value[] = source.coverages.flatMap((cov) => {
+        const values : Value[] = data.coverages.flatMap((cov) => {
             const range = cov.ranges[parameterName];
             // TODO: instead of `composite`, this should be relative to the axisNames in range
             const axes = cov.domain.axes.composite;
@@ -77,7 +82,7 @@ export const CrossSectionD3 = () => {
                 }))
             }
         };
-    }, []);
+    }, [data]);
 
     useEffect(() => {
         if (!ref.current) return;
@@ -110,5 +115,5 @@ export const CrossSectionD3 = () => {
 
     }, [ref, dataGrids]);
 
-   return <svg width={460} height={400} ref={ref} />;
+   return <svg width={460} height={400} ref={ref} style={isLoading ? {'filter': 'saturate(0)'} : {}}/>;
 };
