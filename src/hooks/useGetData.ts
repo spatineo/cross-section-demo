@@ -1,9 +1,17 @@
 import { useEffect, useState } from "react"
 
-export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: string) => {
+interface UseGetData {
+    isLoading: boolean,
+    selectedInstance: any,
+    selectedTime: string|null,
+    availableParameters: string[],
+    trajectory: any
+}
+
+export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: string): UseGetData => {
     const [isLoading, setIsLoading] = useState(false);
     const [availableParameters, setAvailableParameters] = useState<string[]>([]);
-    const [selectedInstance, setSelectedInstance] = useState(null);
+    const [selectedInstance, setSelectedInstance] = useState<any>(null);
     const [selectedTime, setSelectedTime] = useState(null);
     const [trajectory, setTrajectory] = useState(null);
     

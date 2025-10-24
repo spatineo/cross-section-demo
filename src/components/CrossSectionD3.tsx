@@ -28,20 +28,20 @@ export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
     const dataGrids : CrossSectionData = useMemo(() => {
         const parameterName = Object.keys(data.parameters)[0];
 
-        const values : Value[] = data.coverages.flatMap((cov) => {
+        const values : Value[] = data.coverages.flatMap((cov: any) => {
             const range = cov.ranges[parameterName];
             // TODO: instead of `composite`, this should be relative to the axisNames in range
             const axes = cov.domain.axes.composite;
 
-            return range.values.map((value, idx) => {
+            return range.values.map((value: number|null, idx: number) => {
                 return {
                     value,
-                    ...axes.coordinates.reduce((memo, axis, axisIdx) => ({
+                    ...axes.coordinates.reduce((memo: { [id: string]: string|number }, axis: string, axisIdx: number) => ({
                         ...memo,
                         [axis]: axes.values[idx][axisIdx]
                     }), {} as { [id: string]: string|number })
                 };
-            }).filter(v => v.value !==null) as Value[];
+            }).filter((v: { [id: string]: string|number }) => v.value !==null) as Value[];
         });
 
         values.sort((a, b) => {

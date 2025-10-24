@@ -11,7 +11,7 @@ function App() {
   const [ editableCoordsWKT, setEditableCoordsWKT ] = useState<string>(coordsWKT);
   const [ eastWestOffset, setEastWestOffset ] = useState(0);
 
-  const { isLoading, availableParameters, selectedInstance, selectedTime, trajectory } = useGetData('https://opendata.fmi.fi/edr/collections/ecmwf_painepinta', parameter, coordsWKT)
+  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData('https://opendata.fmi.fi/edr/collections/ecmwf_painepinta', parameter, coordsWKT)
 
   useEffect(() => {
     const match = /^\s*([A-Z]+)\s*\((.*)\)\s*$/.exec(coordsBeforeTransformation)
