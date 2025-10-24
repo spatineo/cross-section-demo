@@ -1,0 +1,588 @@
+{
+"coverages" : 
+[
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+50
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+50
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+null,
+null
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+200
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+200
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+-54.896,
+-54.5329
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+250
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+250
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+-57.3711,
+-55.9116
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+300
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+300
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+-50.9903,
+-51.1476
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+500
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+500
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+-23.6104,
+-23.3957
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+700
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+700
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+-6.33293,
+-6.27012
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+850
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+850
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+0.0433258,
+2.0792
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+925
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+925
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+0.708777,
+5.84581
+]
+}
+}
+},
+{
+"type" : "Coverage",
+"domain" : 
+{
+"type" : "Domain",
+"axes" : 
+{
+"composite" : 
+{
+"coordinates" : 
+[
+"t",
+"x",
+"y",
+"z"
+],
+"dataType" : "tuple",
+"values" : 
+[
+[
+"2025-10-23T12:00:00Z",
+27.3822,
+66.1808,
+1000
+],
+[
+"2025-10-23T12:00:00Z",
+20.1283,
+64.3897,
+1000
+]
+]
+}
+}
+},
+"ranges" : 
+{
+"temperature" : 
+{
+"axisNames" : 
+[
+"composite"
+],
+"dataType" : "float",
+"shape" : 
+[
+2
+],
+"type" : "NdArray",
+"values" : 
+[
+4.09527,
+9.6501
+]
+}
+}
+}
+],
+"domainType" : "Trajectory",
+"referencing" : 
+[
+{
+"coordinates" : 
+[
+"y",
+"x"
+],
+"system" : 
+{
+"id" : "http://www.opengis.net/def/crs/EPSG/0/4326",
+"type" : "GeographicCRS"
+}
+},
+{
+"coordinates" : 
+[
+"z"
+],
+"system" : 
+{
+"id" : "TODO: PressureLevel",
+"type" : "VerticalCRS"
+}
+},
+{
+"coordinates" : 
+[
+"t"
+],
+"system" : 
+{
+"calendar" : "Gregorian",
+"type" : "TemporalRS"
+}
+}
+],
+"type" : "CoverageCollection",
+"parameters" : 
+{
+"temperature" : 
+{
+"type" : "Parameter",
+"description" : 
+{
+"fi" : "Ilman lämpötila"
+},
+"observedProperty" : 
+{
+"id" : "Temperature",
+"label" : 
+{
+"fi" : "Temperature"
+}
+},
+"unit" : 
+{
+"label" : 
+{
+"fi" : "Celsius"
+},
+"symbol" : 
+{
+"type" : "http://codes.wmo.int/common/unit/_degC",
+"value" : "˚C"
+}
+}
+}
+}
+}
