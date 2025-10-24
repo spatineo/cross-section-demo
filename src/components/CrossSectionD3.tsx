@@ -18,15 +18,16 @@ interface CrossSectionData {
 }
 
 export const CrossSectionD3 = () => {
-    const ref = useRef(null);
+    const ref = useRef<SVGSVGElement>(null);
 
     const dataGrids : CrossSectionData = useMemo(() => {
         const source = generateExampleTrajectoryCovJSON();
 
-        const parameterName = 'temperature';
+        const parameterName = Object.keys(source.parameters)[0];
+        console.log('parameter', parameterName)
 
         const values : Value[] = source.coverages.flatMap((cov) => {
-            const range = cov.ranges[parameterName]
+            const range = cov.ranges[parameterName];
             // TODO: instead of `composite`, this should be relative to the axisNames in range
             const axes = cov.domain.axes.composite;
 
@@ -54,7 +55,11 @@ export const CrossSectionD3 = () => {
 
         const grid = values.map(v => v.value);
 
-        const polygons = d3.contours().size([width, height])(grid);
+        const contours = d3.contours()
+            .size([width, height])
+            .smooth(true);
+        
+        const polygons = contours(grid);
 
         return {
             values,
@@ -74,9 +79,6 @@ export const CrossSectionD3 = () => {
         };
     }, []);
 
-    console.log(dataGrids);
-
-
     useEffect(() => {
         if (!ref.current) return;
 
@@ -84,7 +86,7 @@ export const CrossSectionD3 = () => {
         width = 460 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
-        // TODO: we need to replace the previous svg, not just add a new one in
+        ref.current.innerHTML = '';
         const svg = d3
             .select(ref.current)
             .append("svg")
@@ -108,5 +110,5 @@ export const CrossSectionD3 = () => {
 
     }, [ref, dataGrids]);
 
-   return <svg width={460} height={400} id="barchart" ref={ref} />;
+   return <svg width={460} height={400} ref={ref} />;
 };
