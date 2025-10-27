@@ -46,17 +46,10 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
             }).filter((v: { [id: string]: string|number }) => v.value !==null) as Value[];
         });
 
-        values.sort((a, b) => {
-            if (a.z! < b.z!) return -1;
-            if (a.z! > b.z!) return 1;
-            if (a.x! < b.x!) return -1;
-            if (a.x! > b.x!) return 1;
-            return 0;
-        });
-
         const width = uniq(values.map(v => v.x)).length;
         const height = uniq(values.map(v => v.z)).length;
 
+        // NOTE! The response from FMI is already sorted in the order we assume the data should be sorted
         const grid = values.map(v => v.value);
 
         const contours = d3.contours()

@@ -5,13 +5,20 @@ import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import WKT from 'ol/format/WKT';
 import { useEffect, useMemo, useRef, useState } from "react";
 import Translate from 'ol/interaction/Translate';
+import Draw from 'ol/interaction/Draw';
 
-import 'ol/ol.css'
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { unByKey } from "ol/Observable";
 import { debounce } from "lodash";
 import type { EventsKey } from "ol/events";
+import Style from "ol/style/Style";
+import Stroke from "ol/style/Stroke";
+import Circle from "ol/style/Circle";
+import Fill from "ol/style/Fill";
+import { MultiPoint, type LineString } from "ol/geom";
+
+import 'ol/ol.css'
 
 interface MapComponentProps {
     coordsWKT: null|string,
@@ -42,18 +49,38 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
         const vectorLayer = new VectorLayer({
             source: vectorSource,
             zIndex: 1,
-            style: {
-                'stroke-color': '#ff000099',
-                'stroke-width': 2.5
+            style: (feature) => {
+                return [
+                    new Style({
+                        stroke: new Stroke({
+                            color: '#ff000099',
+                            width: 2.5
+                        })
+                    }),
+                    new Style({
+                        geometry: new MultiPoint((feature.getGeometry() as LineString).getCoordinates()),
+                        image: new Circle({
+                            radius: 5,
+                            fill: new Fill({
+                                color: '#aa0000dd'
+                            })
+                        })
+                    })
+                ]
             }
-        })
+        });
+
+        const draw = new Draw({
+            source: vectorSource,
+            type: "LineString",
+        });
 
         const translate = new Translate({
             layers: [vectorLayer]
         });
 
         const mapObject: Map = new Map({
-            interactions: defaultInteractions().extend([translate]),
+            interactions: defaultInteractions().extend([translate, draw]),
             view: new View({
                 projection: 'EPSG:3857',
                 center: [2191602, 9461681],
@@ -73,6 +100,7 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
 
         const evtKeys : EventsKey[] = [];
 
+        // Translation events
         evtKeys.push(translate.on('translating', (evt) => {
             debouncedSetCoords(evt.features.getArray()[0]);
         }));
@@ -81,6 +109,11 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
         }));
         evtKeys.push(translate.on('translateend', () => {
             setTranslating(false);
+        }));
+
+        // Draw events
+        evtKeys.push(draw.on('drawend', (evt) => {
+            debouncedSetCoords(evt.feature);
         }));
 
         return () => {
@@ -106,5 +139,7 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
 
     }, [coordsWKT, translating, vectorSource, debouncedSetCoords]);
 
-    return <div ref={ref} style={{width: '500px', height: '100%'}}/>;
+    return (
+        <div ref={ref} style={{width: '500px', height: '100%'}}/>
+    )
 }
