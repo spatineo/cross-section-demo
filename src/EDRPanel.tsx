@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 
 import { CrossSectionD3 } from './components/CrossSectionD3'
 import { useGetData } from './hooks/useGetData'
@@ -17,19 +17,18 @@ const SERVICES = [{
 export const EDRPanel = () => {
   const [ parameter, setParameter ] = useState<string|null>(null)
   const [ coordsWKT, setCoordsWKT ] = useState<string>('LINESTRING(7 66.2,8 66.2,9 66.2,10 66.2,11 66.2,12 66.2,12 66.2,13 66.2,14 66.2,15 66.2,16 66.2,17 66.2,18 66.2,19 66.2,20 66.2,21 66.2,22 66.2)')
-  const [ coordsBeforeTransformation, setCoordsBeforeTransformation ] = useState<string>(coordsWKT);
-  const [ editableCoordsWKT, setEditableCoordsWKT ] = useState<string>(coordsWKT);
-  const [ eastWestOffset, setEastWestOffset ] = useState(0);
-  const [ northSouthOffset, setNorthSouthOffset ] = useState(0);
   const [ selectedService, setSelectedService ] = useState(SERVICES[0].collectionUrl);
-  const [ dragging, setDragging ] = useState(false);
 
   const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData({
     baseurl: selectedService,
     parameter,
     coordsWKT,
-    coarseData: dragging ? false: false // TODO: using `dragging` directly here causes tanstack to not refetch for one reason or another
+    coarseData: false
   });
+
+  const setCoordsFromMap = useCallback((wkt: string) => {
+    setCoordsWKT(wkt)
+  }, [])
 
   useEffect(() => {
     if (!parameter) return;
@@ -38,29 +37,6 @@ export const EDRPanel = () => {
       setParameter(null);
     }
   }, [availableParameters, parameter])
-
-  useEffect(() => {
-    const match = /^\s*([A-Z]+)\s*\((.*)\)\s*$/.exec(coordsBeforeTransformation)
-    if (!match) {
-      console.error('illegal / unknown WKT', coordsBeforeTransformation)
-      return;
-    }
-
-    const verb = match[1];
-    const values = match[2];
-
-    const modifiedValues = values.split(/\s*,\s*/).map((pair) => {
-      const v = pair.split(/\s+/)
-      v[0] = String(Number(v[0]) + eastWestOffset)
-      v[1] = String(Number(v[1]) + northSouthOffset)
-      return v.join(' ')
-    }).join(', ');
-
-    const newValue = `${verb}(${modifiedValues})`
-    
-    setCoordsWKT(newValue);
-  }, [eastWestOffset, northSouthOffset, coordsBeforeTransformation])
-
 
   const flexColumnStyle : CSSProperties = {display: 'flex' };
   const flexColumnItemStyle : CSSProperties = { flex: '2 0 50%' }
@@ -85,38 +61,6 @@ export const EDRPanel = () => {
             </select>
             </label>
           </div>
-          <div>
-            <label>Coords parameter to EDR<br />
-            <textarea value={editableCoordsWKT} cols={50} rows={5} onChange={(evt) => setEditableCoordsWKT(evt.target.value)} />
-            <button onClick={() => setCoordsBeforeTransformation(editableCoordsWKT)}>GO</button>
-            </label>
-          </div>
-          <div>
-            <label>Drag coords east-west (apply offset)</label>
-            <input 
-              type="range" 
-              min="-30"
-              max="30"
-              step="0.1"
-              value={eastWestOffset}
-              onChange={(evt) => setEastWestOffset(Number(evt.target.value))}
-              onMouseDown={() => setDragging(true)}
-              onMouseUp={() => setDragging(false)}
-              ></input> {eastWestOffset}
-          </div>
-          <div>
-            <label>Drag coords north-south (apply offset)</label>
-            <input
-              type="range"
-              min="-30"
-              max="30"
-              step="0.1"
-              value={northSouthOffset}
-              onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}
-              onMouseDown={() => setDragging(true)}
-              onMouseUp={() => setDragging(false)}
-              ></input> {northSouthOffset}
-          </div>
           {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} width={640} height={480} /> }
           <div>
             <p>Selected instance: {selectedInstance ? selectedInstance.id : '-'}</p>
@@ -124,7 +68,7 @@ export const EDRPanel = () => {
           </div>
         </div>
         <div style={flexColumnItemStyle}>
-          <MapComponent coordsWKT={coordsWKT} />
+          <MapComponent coordsWKT={coordsWKT} setCoordsWKT={setCoordsFromMap} />
         </div>
       </div>
     </>
