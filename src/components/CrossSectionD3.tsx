@@ -20,9 +20,11 @@ interface CrossSectionData {
 interface CrossSectionD3Props {
     data: ReturnType<typeof generateExampleTrajectoryCovJSON>,
     isLoading: boolean
+    width: number
+    height: number
 }
 
-export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
+export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3Props) => {
     const ref = useRef<SVGSVGElement>(null);
 
     const dataGrids : CrossSectionData = useMemo(() => {
@@ -84,18 +86,13 @@ export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
     useEffect(() => {
         if (!ref.current) return;
 
-        const margin = { top: 30, right: 30, bottom: 70, left: 60 },
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
-
         ref.current.innerHTML = '';
         const svg = d3
             .select(ref.current)
             .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
+            .attr("width", width)
+            .attr("height", height)
             .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
         
         const myColor = d3.scaleSequential()
             .interpolator(d3.interpolateBlues)
@@ -110,7 +107,7 @@ export const CrossSectionD3 = ({data, isLoading} : CrossSectionD3Props) => {
                 .attr("d", d3.geoPath())
         })
 
-    }, [ref, dataGrids]);
+    }, [ref, width, height, dataGrids]);
 
-   return <svg width={460} height={400} ref={ref} style={isLoading ? {'filter': 'saturate(0)'} : {}}/>;
+   return <svg width={width} height={height} ref={ref} style={isLoading ? {'filter': 'saturate(0)'} : {}}/>;
 };

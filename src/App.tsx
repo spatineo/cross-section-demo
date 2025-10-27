@@ -10,8 +10,15 @@ function App() {
   const [ coordsBeforeTransformation, setCoordsBeforeTransformation ] = useState<string>(coordsWKT);
   const [ editableCoordsWKT, setEditableCoordsWKT ] = useState<string>(coordsWKT);
   const [ eastWestOffset, setEastWestOffset ] = useState(0);
+  const [ northSouthOffset, setNorthSouthOffset ] = useState(0);
 
-  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData('https://opendata.fmi.fi/edr/collections/ecmwf_painepinta', parameter, coordsWKT)
+  // Fast, but quite coarse
+  // const collection = 'https://opendata.fmi.fi/edr/collections/ecmwf_painepinta';
+
+  // Slower, but with more z levels
+  const collection = 'https://opendata.fmi.fi/edr/collections/harmonie_scandinavia_hybrid';
+
+  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData(collection, parameter, coordsWKT)
 
   useEffect(() => {
     const match = /^\s*([A-Z]+)\s*\((.*)\)\s*$/.exec(coordsBeforeTransformation)
@@ -26,13 +33,14 @@ function App() {
     const modifiedValues = values.split(/\s*,\s*/).map((pair) => {
       const v = pair.split(/\s+/)
       v[0] = String(Number(v[0]) + eastWestOffset)
+      v[1] = String(Number(v[1]) + northSouthOffset)
       return v.join(' ')
     }).join(', ');
 
     const newValue = `${verb}(${modifiedValues})`
     
     setCoordsWKT(newValue);
-  }, [eastWestOffset, coordsBeforeTransformation])
+  }, [eastWestOffset, northSouthOffset, coordsBeforeTransformation])
 
   return (
     <>
@@ -52,9 +60,13 @@ function App() {
       </div>
       <div>
         <label>Drag coords east-west (apply offset)</label>
-        <input type="range" min="-30" max="30" value={eastWestOffset} onChange={(evt) => setEastWestOffset(Number(evt.target.value))}></input> {eastWestOffset}
+        <input type="range" min="-30" max="30" step="0.1" value={eastWestOffset} onChange={(evt) => setEastWestOffset(Number(evt.target.value))}></input> {eastWestOffset}
       </div>
-      {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} /> }
+      <div>
+        <label>Drag coords north-south (apply offset)</label>
+        <input type="range" min="-30" max="30" step="0.1" value={northSouthOffset} onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}></input> {northSouthOffset}
+      </div>
+      {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} width={640} height={480} /> }
       <div>
         <p>Selected instance: {selectedInstance ? selectedInstance.id : '-'}</p>
         <p>Selected time: {selectedTime}</p>
