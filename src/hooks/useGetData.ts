@@ -8,7 +8,14 @@ interface UseGetData {
     trajectory: any
 }
 
-export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: string): UseGetData => {
+interface UseGetDataParameters {
+    baseurl: string,
+    parameter: string|null,
+    coordsWKT: string,
+    coarseData: boolean
+}
+
+export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDataParameters): UseGetData => {
     const [isLoading, setIsLoading] = useState(false);
     const [availableParameters, setAvailableParameters] = useState<string[]>([]);
     const [selectedInstance, setSelectedInstance] = useState<any>(null);
@@ -28,7 +35,7 @@ export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: s
             setAvailableParameters(Object.keys(selectedInstance.parameter_names));
         }
 
-        setAvailableParameters([])
+        setAvailableParameters([]);
 
         retrieveInstances();
     }, [baseurl]);
@@ -47,7 +54,12 @@ export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: s
             qs.append('crs', 'CRS:84')
             //qs.append('coords', 'LINESTRING(7 66.2,8 66.2,9 66.2,10 66.2,11 66.2,12 66.2,12 66.2,13 66.2,14 66.2,15 66.2,16 66.2,17 66.2,18 66.2,19 66.2,20 66.2,21 66.2,22 66.2)');
             qs.append('coords', coordsWKT);
-            qs.append('z', selectedInstance.extent.vertical.values.join(','))
+
+            if (coarseData) {
+                qs.append('z', selectedInstance.extent.vertical.values.filter((_v: number, idx: number) => idx % 3 === 0).join(','))
+            } else {
+                qs.append('z', selectedInstance.extent.vertical.values.join(','))
+            }
             qs.append('f', 'CoverageJSON')
 
             const trajectoryResponse = await fetch(`${baseurl}/instances/${selectedInstance.id}/trajectory?${qs.toString()}`)
@@ -60,7 +72,7 @@ export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: s
 
         retrieveTrajectory();
 
-    }, [baseurl, selectedInstance, parameter, coordsWKT])
+    }, [baseurl, selectedInstance, parameter, coordsWKT, coarseData])
 
     return {
         isLoading,

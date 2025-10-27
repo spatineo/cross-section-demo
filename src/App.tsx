@@ -22,9 +22,17 @@ function App() {
   const [ eastWestOffset, setEastWestOffset ] = useState(0);
   const [ northSouthOffset, setNorthSouthOffset ] = useState(0);
   const [ selectedService, setSelectedService ] = useState(SERVICES[0].collectionUrl);
+  const [ dragging, setDragging ] = useState(false);
 
-  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData(selectedService, parameter, coordsWKT)
+  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData({
+    baseurl: selectedService,
+    parameter,
+    coordsWKT,
+    coarseData: dragging
+  });
 
+  console.log('dragging', dragging)
+  
   useEffect(() => {
     if (!parameter) return;
 
@@ -80,11 +88,29 @@ function App() {
       </div>
       <div>
         <label>Drag coords east-west (apply offset)</label>
-        <input type="range" min="-30" max="30" step="0.1" value={eastWestOffset} onChange={(evt) => setEastWestOffset(Number(evt.target.value))}></input> {eastWestOffset}
+        <input 
+          type="range" 
+          min="-30"
+          max="30"
+          step="0.1"
+          value={eastWestOffset}
+          onChange={(evt) => setEastWestOffset(Number(evt.target.value))}
+          onMouseDown={() => setDragging(true)}
+          onMouseUp={() => setDragging(false)}
+          ></input> {eastWestOffset}
       </div>
       <div>
         <label>Drag coords north-south (apply offset)</label>
-        <input type="range" min="-30" max="30" step="0.1" value={northSouthOffset} onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}></input> {northSouthOffset}
+        <input
+          type="range"
+          min="-30"
+          max="30"
+          step="0.1"
+          value={northSouthOffset}
+          onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}
+          onMouseDown={() => setDragging(true)}
+          onMouseUp={() => setDragging(false)}
+          ></input> {northSouthOffset}
       </div>
       {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} width={640} height={480} /> }
       <div>
