@@ -8,7 +8,7 @@ import type { LineSegment } from "../types";
  * @param threshold - The minimum required separation distance.
  * @returns An array of culled points.
  */
-export const cullPoints = (points: LineSegment[], threshold: number): LineSegment[] => {
+export const cullPoints = (points: LineSegment[], xScale: number, yScale: number, threshold: number): LineSegment[] => {
     // 1. Sort the points by score in descending order (Greedy step).
     // We want to process the most important points first to ensure they are kept.
 
@@ -46,8 +46,8 @@ export const cullPoints = (points: LineSegment[], threshold: number): LineSegmen
             }
 
             // Using squared distance for efficiency: d^2 < T^2
-            const dx = p1.mid[0] - p2.mid[0];
-            const dy = p1.mid[1] - p2.mid[1];
+            const dx = (p1.mid[0] - p2.mid[0]) * xScale;
+            const dy = (p1.mid[1] - p2.mid[1]) * yScale;
             const distanceSq = dx * dx + dy * dy;
 
             if (distanceSq < thresholdSq) {

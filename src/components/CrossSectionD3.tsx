@@ -129,7 +129,7 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
 
         });
 
-        const culledLineSegments = cullPoints(allLineSegments, 1.5);
+        const culledLineSegments = cullPoints(allLineSegments, xScale, yScale, 60);
         svg
             .selectAll('line-segments')
             .data(culledLineSegments)
