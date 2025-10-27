@@ -38,7 +38,7 @@ export const EDRPanel = () => {
     }
   }, [availableParameters, parameter])
 
-  const flexColumnStyle : CSSProperties = {display: 'flex' };
+  const flexColumnStyle : CSSProperties = {display: 'flex',minHeight: '500px' };
   const flexColumnItemStyle : CSSProperties = { flex: '2 0 50%' }
 
   return (

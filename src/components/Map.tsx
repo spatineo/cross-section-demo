@@ -1,17 +1,17 @@
 import { Feature, Map, View } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { OSM } from "ol/source";
+import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import WKT from 'ol/format/WKT';
 import { useEffect, useMemo, useRef, useState } from "react";
-import Select from 'ol/interaction/Select';
 import Translate from 'ol/interaction/Translate';
-import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 
 import 'ol/ol.css'
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { unByKey } from "ol/Observable";
 import { debounce } from "lodash";
+import type { EventsKey } from "ol/events";
 
 interface MapComponentProps {
     coordsWKT: null|string,
@@ -20,9 +20,9 @@ interface MapComponentProps {
 
 export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [map, setMap] = useState<Map|null>(null);
-    const [translate, setTranslate] = useState<Translate|null>(null);
- 
+    const [translating, setTranslating] = useState(false);
+    const [vectorSource, setVectorSource] = useState<VectorSource|null>(null);
+
     const debouncedSetCoords = useMemo(() => {
         return debounce((feature: Feature) => {
             const format = new WKT();
@@ -38,39 +38,61 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
     useEffect(() => {
         if (!ref.current) return;
 
-        const select = new Select();
+        const vectorSource = new VectorSource();
+        const vectorLayer = new VectorLayer({
+            source: vectorSource,
+            zIndex: 1,
+            style: {
+                'stroke-color': '#ff000099',
+                'stroke-width': 2.5
+            }
+        })
 
         const translate = new Translate({
-            features: select.getFeatures(),
+            layers: [vectorLayer]
         });
 
         const mapObject: Map = new Map({
-            interactions: defaultInteractions().extend([select, translate]),
+            interactions: defaultInteractions().extend([translate]),
             view: new View({
                 projection: 'EPSG:3857',
                 center: [2191602, 9461681],
                 zoom: 4
             }),
-            layers: [new TileLayer({
-                source: new OSM()
-            })]
+            layers: [
+                new TileLayer({
+                    source: new OSM(),
+                    zIndex: 0,
+                }),
+                vectorLayer
+            ]
         });
 
         mapObject.setTarget(ref.current);
-        setMap(mapObject);
-        setTranslate(translate);
+        setVectorSource(vectorSource);
+
+        const evtKeys : EventsKey[] = [];
+
+        evtKeys.push(translate.on('translating', (evt) => {
+            debouncedSetCoords(evt.features.getArray()[0]);
+        }));
+        evtKeys.push(translate.on('translatestart', () => {
+            setTranslating(true);
+        }));
+        evtKeys.push(translate.on('translateend', () => {
+            setTranslating(false);
+        }));
 
         return () => {
-            setTranslate(null);
-            setMap(null);
+            evtKeys.forEach(unByKey);
+            setVectorSource(null);
             mapObject.setTarget(undefined);
             mapObject.dispose();
         }
-    }, [ref]);
+    }, [ref, debouncedSetCoords]);
 
     useEffect(() => {
-        if (!map || !coordsWKT || !translate) return;
-
+        if (!vectorSource || !coordsWKT || translating) return;
 
         const format = new WKT();
 
@@ -79,24 +101,10 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
             featureProjection: 'EPSG:3857',
         });
 
-        const vector = new VectorLayer({
-            source: new VectorSource({
-                features: [feature],
-            })
-        });
+        vectorSource.clear();
+        vectorSource.addFeature(feature);
 
-        map.addLayer(vector);
-
-        const evtKey = translate.on('translating', (evt) => {
-            debouncedSetCoords(evt.features.getArray()[0]);
-        });
-
-        return () => {
-            map.removeLayer(vector);
-            unByKey(evtKey);
-        }
-
-    }, [coordsWKT, translate, map, debouncedSetCoords]);
+    }, [coordsWKT, translating, vectorSource, debouncedSetCoords]);
 
     return <div ref={ref} style={{width: '500px', height: '100%'}}/>;
 }
