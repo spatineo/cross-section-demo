@@ -28,6 +28,8 @@ export const useGetData = (baseurl: string, parameter: string|null, coordsWKT: s
             setAvailableParameters(Object.keys(selectedInstance.parameter_names));
         }
 
+        setAvailableParameters([])
+
         retrieveInstances();
     }, [baseurl]);
 

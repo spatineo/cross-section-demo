@@ -4,6 +4,16 @@ import './App.css'
 import { CrossSectionD3 } from './components/CrossSectionD3'
 import { useGetData } from './hooks/useGetData'
 
+const SERVICES = [{
+  // Fast, but quite coarse
+  title: 'FMI ECWMF Painepinta',
+  collectionUrl: 'https://opendata.fmi.fi/edr/collections/ecmwf_painepinta'
+}, {
+  // Slower, but with more z levels
+  title: 'FMI Harmonie Scandinavia Hybrid',
+  collectionUrl: 'https://opendata.fmi.fi/edr/collections/harmonie_scandinavia_hybrid'
+}];
+
 function App() {
   const [ parameter, setParameter ] = useState<string|null>(null)
   const [ coordsWKT, setCoordsWKT ] = useState<string>('LINESTRING(7 66.2,8 66.2,9 66.2,10 66.2,11 66.2,12 66.2,12 66.2,13 66.2,14 66.2,15 66.2,16 66.2,17 66.2,18 66.2,19 66.2,20 66.2,21 66.2,22 66.2)')
@@ -11,14 +21,17 @@ function App() {
   const [ editableCoordsWKT, setEditableCoordsWKT ] = useState<string>(coordsWKT);
   const [ eastWestOffset, setEastWestOffset ] = useState(0);
   const [ northSouthOffset, setNorthSouthOffset ] = useState(0);
+  const [ selectedService, setSelectedService ] = useState(SERVICES[0].collectionUrl);
 
-  // Fast, but quite coarse
-  // const collection = 'https://opendata.fmi.fi/edr/collections/ecmwf_painepinta';
+  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData(selectedService, parameter, coordsWKT)
 
-  // Slower, but with more z levels
-  const collection = 'https://opendata.fmi.fi/edr/collections/harmonie_scandinavia_hybrid';
+  useEffect(() => {
+    if (!parameter) return;
 
-  const { availableParameters, selectedInstance, selectedTime, trajectory } = useGetData(collection, parameter, coordsWKT)
+    if (!availableParameters.includes(parameter)) {
+      setParameter(null);
+    }
+  }, [availableParameters, parameter])
 
   useEffect(() => {
     const match = /^\s*([A-Z]+)\s*\((.*)\)\s*$/.exec(coordsBeforeTransformation)
@@ -44,6 +57,13 @@ function App() {
 
   return (
     <>
+      <div>
+        <label>EDR Collection
+        <select onChange={(event) => setSelectedService(event.target.value)}>
+          {SERVICES.map((param, idx) => (<option value={param.collectionUrl} key={idx} selected={selectedInstance === param.collectionUrl}>{param.title}</option>))}
+        </select>
+        </label>
+      </div>
       <div>
         <label>Parameter to visualise
         <select onChange={(event) => setParameter(event.target.value)}>
