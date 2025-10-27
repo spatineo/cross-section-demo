@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 interface UseGetData {
     isLoading: boolean,
     selectedInstance: any,
-    selectedTime: string|null,
     availableParameters: string[],
+    selectedTime: string | null,
     trajectory: any
 }
 
@@ -16,8 +16,17 @@ interface UseGetDataParameters {
     coarseData: boolean
 }
 
+interface FetchInstancesParameters {
+    queryKey: [
+        'instances',
+        {
+            baseurl: string
+        }
+    ]
+}
+
 // Access the key, status and page variables in your query function!
-async function fetchInstances({ queryKey }) {
+async function fetchInstances({ queryKey }: FetchInstancesParameters) {
     const { baseurl } = queryKey[1];
 
     const instancesResponse = await fetch(`${baseurl}/instances`)
@@ -28,12 +37,54 @@ async function fetchInstances({ queryKey }) {
     return instances;
 }
 
+interface FetchDataParameters {
+    queryKey: [
+        'data',
+        {
+            parameter: string|null,
+            coordsWKT: string,
+            mode: 'COARSE' | 'FULL',
+            selectedInstance: any,
+            baseurl: string
+        }
+    ]
+}
+
+async function fetchData({ queryKey }: FetchDataParameters) {
+    const { parameter, coordsWKT, mode, selectedInstance, baseurl } = queryKey[1];
+
+    if (!selectedInstance || !parameter) return null;
+
+    const datetime = selectedInstance ? selectedInstance.extent.temporal.interval[0][0]! : null;
+
+    const qs = new URLSearchParams();
+    qs.append('parameter-name', parameter)
+    qs.append('datetime', datetime)
+    qs.append('crs', 'CRS:84')
+    qs.append('coords', coordsWKT);
+
+    if (mode === 'COARSE') {
+        qs.append('z', selectedInstance.extent.verticalValues.filter((_v: number, idx: number) => idx % 4 === 0).join(','))
+    } else if (mode === 'FULL') {
+        qs.append('z', selectedInstance.extent.vertical.values.join(','))
+    }
+    qs.append('f', 'CoverageJSON')
+
+    const trajectoryResponse = await fetch(`${baseurl}/instances/${selectedInstance.id}/trajectory?${qs.toString()}`)
+    const trajectory = await trajectoryResponse.json();
+
+    return {
+        datetime,
+        trajectory
+    };
+}
+
 export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDataParameters): UseGetData => {
     const [isLoading, setIsLoading] = useState(false);
     const [availableParameters, setAvailableParameters] = useState<string[]>([]);
     const [selectedInstance, setSelectedInstance] = useState<any>(null);
-    const [selectedTime, setSelectedTime] = useState(null);
     const [trajectory, setTrajectory] = useState(null);
+    const [selectedTime, setSelectedTime] = useState<string|null>(null)
     
     const instancesResponse = useQuery({
         queryKey: ['instances', { baseurl }],
@@ -54,44 +105,34 @@ export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDa
         }
     }, [instancesResponse.isPending, instancesResponse.isSuccess, instancesResponse.data])
 
-    useEffect(() => {
-        if (!selectedInstance || !parameter) return;
-
-        const retrieveTrajectory = async () => {
-            setIsLoading(true);
-
-            const datetime = selectedInstance.extent.temporal.interval[0][0]!;
-
-            const qs = new URLSearchParams();
-            qs.append('parameter-name', parameter)
-            qs.append('datetime', datetime)
-            qs.append('crs', 'CRS:84')
-            qs.append('coords', coordsWKT);
-
-            if (coarseData) {
-                qs.append('z', selectedInstance.extent.vertical.values.filter((_v: number, idx: number) => idx % 4 === 0).join(','))
-            } else {
-                qs.append('z', selectedInstance.extent.vertical.values.join(','))
+    const dataResponse = useQuery({
+        queryKey: [
+            'data',
+            {
+                parameter,
+                coordsWKT,
+                mode: coarseData ? 'COARSE' : 'FULL',
+                selectedInstance,
+                baseurl
             }
-            qs.append('f', 'CoverageJSON')
+        ],
+        queryFn: fetchData
+    });
 
-            const trajectoryResponse = await fetch(`${baseurl}/instances/${selectedInstance.id}/trajectory?${qs.toString()}`)
-            const trajectory = await trajectoryResponse.json();
+    useEffect(() => {
+        setIsLoading(dataResponse.isPending)
 
-            setSelectedTime(datetime);
-            setTrajectory(trajectory);
-            setIsLoading(false);
+        if (dataResponse.isSuccess && dataResponse.data) {
+            setSelectedTime(dataResponse.data.datetime);
+            setTrajectory(dataResponse.data.trajectory as any);
         }
-
-        retrieveTrajectory();
-
-    }, [baseurl, selectedInstance, parameter, coordsWKT, coarseData])
+    }, [dataResponse.isPending, dataResponse.isSuccess, dataResponse.data])
 
     return {
         isLoading,
         selectedInstance,
-        selectedTime,
         availableParameters,
+        selectedTime,
         trajectory
     }
 }

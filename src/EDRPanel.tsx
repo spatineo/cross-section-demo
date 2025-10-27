@@ -27,11 +27,9 @@ export const EDRPanel = () => {
     baseurl: selectedService,
     parameter,
     coordsWKT,
-    coarseData: dragging
+    coarseData: dragging ? false: false // TODO: using `dragging` directly here causes tanstack to not refetch for one reason or another
   });
 
-  console.log('dragging', dragging)
-  
   useEffect(() => {
     if (!parameter) return;
 
