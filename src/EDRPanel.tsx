@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 import { CrossSectionD3 } from './components/CrossSectionD3'
 import { useGetData } from './hooks/useGetData'
+import { MapComponent } from './components/Map';
 
 const SERVICES = [{
   // Fast, but quite coarse
@@ -60,59 +61,71 @@ export const EDRPanel = () => {
     setCoordsWKT(newValue);
   }, [eastWestOffset, northSouthOffset, coordsBeforeTransformation])
 
+
+  const flexColumnStyle : CSSProperties = {display: 'flex' };
+  const flexColumnItemStyle : CSSProperties = { flex: '2 0 50%' }
+
   return (
     <>
-      <div>
-        <label>EDR Collection
-        <select onChange={(event) => setSelectedService(event.target.value)}>
-          {SERVICES.map((param, idx) => (<option value={param.collectionUrl} key={idx} selected={selectedInstance === param.collectionUrl}>{param.title}</option>))}
-        </select>
-        </label>
-      </div>
-      <div>
-        <label>Parameter to visualise
-        <select onChange={(event) => setParameter(event.target.value)}>
-          <option></option>
-          {availableParameters.map((param, idx) => (<option value={param} key={idx} selected={param === parameter}>{param}</option>))}
-        </select>
-        </label>
-      </div>
-      <div>
-        <label>Coords parameter to EDR<br />
-        <textarea value={editableCoordsWKT} cols={50} rows={5} onChange={(evt) => setEditableCoordsWKT(evt.target.value)} />
-        <button onClick={() => setCoordsBeforeTransformation(editableCoordsWKT)}>GO</button>
-        </label>
-      </div>
-      <div>
-        <label>Drag coords east-west (apply offset)</label>
-        <input 
-          type="range" 
-          min="-30"
-          max="30"
-          step="0.1"
-          value={eastWestOffset}
-          onChange={(evt) => setEastWestOffset(Number(evt.target.value))}
-          onMouseDown={() => setDragging(true)}
-          onMouseUp={() => setDragging(false)}
-          ></input> {eastWestOffset}
-      </div>
-      <div>
-        <label>Drag coords north-south (apply offset)</label>
-        <input
-          type="range"
-          min="-30"
-          max="30"
-          step="0.1"
-          value={northSouthOffset}
-          onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}
-          onMouseDown={() => setDragging(true)}
-          onMouseUp={() => setDragging(false)}
-          ></input> {northSouthOffset}
-      </div>
-      {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} width={640} height={480} /> }
-      <div>
-        <p>Selected instance: {selectedInstance ? selectedInstance.id : '-'}</p>
-        <p>Selected time: {selectedTime}</p>
+      <div style={flexColumnStyle}>
+        <div style={flexColumnItemStyle}>
+
+          <div>
+            <label>EDR Collection
+            <select onChange={(event) => setSelectedService(event.target.value)}>
+              {SERVICES.map((param, idx) => (<option value={param.collectionUrl} key={idx} selected={selectedInstance === param.collectionUrl}>{param.title}</option>))}
+            </select>
+            </label>
+          </div>
+          <div>
+            <label>Parameter to visualise
+            <select onChange={(event) => setParameter(event.target.value)}>
+              <option></option>
+              {availableParameters.map((param, idx) => (<option value={param} key={idx} selected={param === parameter}>{param}</option>))}
+            </select>
+            </label>
+          </div>
+          <div>
+            <label>Coords parameter to EDR<br />
+            <textarea value={editableCoordsWKT} cols={50} rows={5} onChange={(evt) => setEditableCoordsWKT(evt.target.value)} />
+            <button onClick={() => setCoordsBeforeTransformation(editableCoordsWKT)}>GO</button>
+            </label>
+          </div>
+          <div>
+            <label>Drag coords east-west (apply offset)</label>
+            <input 
+              type="range" 
+              min="-30"
+              max="30"
+              step="0.1"
+              value={eastWestOffset}
+              onChange={(evt) => setEastWestOffset(Number(evt.target.value))}
+              onMouseDown={() => setDragging(true)}
+              onMouseUp={() => setDragging(false)}
+              ></input> {eastWestOffset}
+          </div>
+          <div>
+            <label>Drag coords north-south (apply offset)</label>
+            <input
+              type="range"
+              min="-30"
+              max="30"
+              step="0.1"
+              value={northSouthOffset}
+              onChange={(evt) => setNorthSouthOffset(Number(evt.target.value))}
+              onMouseDown={() => setDragging(true)}
+              onMouseUp={() => setDragging(false)}
+              ></input> {northSouthOffset}
+          </div>
+          {trajectory && <CrossSectionD3 data={trajectory} isLoading={false} width={640} height={480} /> }
+          <div>
+            <p>Selected instance: {selectedInstance ? selectedInstance.id : '-'}</p>
+            <p>Selected time: {selectedTime}</p>
+          </div>
+        </div>
+        <div style={flexColumnItemStyle}>
+          <MapComponent coordsWKT={coordsWKT} />
+        </div>
       </div>
     </>
   )
