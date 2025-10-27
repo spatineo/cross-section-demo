@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
 interface UseGetData {
@@ -15,6 +16,18 @@ interface UseGetDataParameters {
     coarseData: boolean
 }
 
+// Access the key, status and page variables in your query function!
+async function fetchInstances({ queryKey }) {
+    const { baseurl } = queryKey[1];
+
+    const instancesResponse = await fetch(`${baseurl}/instances`)
+    const instances = await instancesResponse.json();
+
+    instances.instances.sort((a: any, b: any) => a.id < b.id ? 1 : -1);
+
+    return instances;
+}
+
 export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDataParameters): UseGetData => {
     const [isLoading, setIsLoading] = useState(false);
     const [availableParameters, setAvailableParameters] = useState<string[]>([]);
@@ -22,23 +35,24 @@ export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDa
     const [selectedTime, setSelectedTime] = useState(null);
     const [trajectory, setTrajectory] = useState(null);
     
+    const instancesResponse = useQuery({
+        queryKey: ['instances', { baseurl }],
+        queryFn: fetchInstances,
+    })
+
     useEffect(() => {
-        const retrieveInstances = async () => {
-            const instancesResponse = await fetch(`${baseurl}/instances`)
-            const instances = await instancesResponse.json();
-
-            instances.instances.sort((a: any, b: any) => a.id < b.id ? 1 : -1);
-
-            const selectedInstance = instances.instances[0];
+        if (instancesResponse.isPending) {
+            setAvailableParameters([]);
+            setSelectedInstance(null);
+            return;
+        }
+        if (instancesResponse.isSuccess && instancesResponse.data) {
+            const selectedInstance = instancesResponse.data.instances[0];
 
             setSelectedInstance(selectedInstance);
             setAvailableParameters(Object.keys(selectedInstance.parameter_names));
         }
-
-        setAvailableParameters([]);
-
-        retrieveInstances();
-    }, [baseurl]);
+    }, [instancesResponse.isPending, instancesResponse.isSuccess, instancesResponse.data])
 
     useEffect(() => {
         if (!selectedInstance || !parameter) return;
@@ -52,11 +66,10 @@ export const useGetData = ({baseurl, parameter, coordsWKT, coarseData}: UseGetDa
             qs.append('parameter-name', parameter)
             qs.append('datetime', datetime)
             qs.append('crs', 'CRS:84')
-            //qs.append('coords', 'LINESTRING(7 66.2,8 66.2,9 66.2,10 66.2,11 66.2,12 66.2,12 66.2,13 66.2,14 66.2,15 66.2,16 66.2,17 66.2,18 66.2,19 66.2,20 66.2,21 66.2,22 66.2)');
             qs.append('coords', coordsWKT);
 
             if (coarseData) {
-                qs.append('z', selectedInstance.extent.vertical.values.filter((_v: number, idx: number) => idx % 3 === 0).join(','))
+                qs.append('z', selectedInstance.extent.vertical.values.filter((_v: number, idx: number) => idx % 4 === 0).join(','))
             } else {
                 qs.append('z', selectedInstance.extent.vertical.values.join(','))
             }
