@@ -2,7 +2,7 @@ import * as d3 from "d3";
 import { useEffect, useMemo, useRef } from "react";
 import { uniq } from "lodash";
 import { generateExampleTrajectoryCovJSON } from "../data/exampleData";
-import type { FeatureCollection } from "geojson";
+import type { FeatureCollection, MultiPolygon } from "geojson";
 
 interface Value {
     value: number;
@@ -22,6 +22,13 @@ interface CrossSectionD3Props {
     isLoading: boolean
     width: number
     height: number
+}
+
+interface LineSegment {
+    a: number[],
+    b: number[],
+    mid: number[],
+    angle: number
 }
 
 export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3Props) => {
@@ -91,13 +98,55 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
             .interpolator(d3.interpolateBlues)
             .domain([d3.min(dataGrids.grid)!, d3.max(dataGrids.grid)!])
 
+
+
         dataGrids.featureCollection.features.forEach(feature => {
+            const path = d3.geoPath();
+
+            const xScale = width/dataGrids.gridWidth;
+            const yScale = height/dataGrids.gridHeight;
+
+            const value = feature.properties!.value;
+
             svg.append("path")
                 .datum(feature)
                 .style("stroke", "none")
-                .style("fill", (x) => myColor(x.properties!.value))
-                .attr("transform", `scale(${width/dataGrids.gridWidth} ${height/dataGrids.gridHeight})`)
-                .attr("d", d3.geoPath())
+                .style("fill", myColor(value))
+                .attr("transform", `scale(${xScale} ${yScale})`)
+                .attr("d", path)
+
+            const ringToLineSegments = (ring: number[][]): LineSegment[] => {
+                // TODO: make this sparse
+                const segments = [];
+                for (let i = 1; i < ring.length; i++) {
+                    segments.push({
+                        a: ring[i-1],
+                        b: ring[i],
+                        mid: [ (ring[i-1][0] + ring[i][0])/2, (ring[i-1][1] + ring[i][1])/2 ],
+                        angle: Math.atan2(ring[i-1][1] - ring[i][1], ring[i-1][0] - ring[i][0]),
+                    })
+                }
+                return segments;
+            }
+
+            const lineSegments = ((feature.geometry as MultiPolygon).coordinates).flatMap(polygonPart => ringToLineSegments(polygonPart[0])) as LineSegment[]
+
+            console.log(lineSegments)
+            svg
+                .selectAll('line-segments')
+                .data(lineSegments)
+                .enter()
+                .append("g")
+                    .style("transform", (segment) => `translate(${segment.mid[0] * xScale}px, ${segment.mid[1] * yScale}px)`)
+                .append("text")
+                    .attr("width", "0px")
+                    .attr("height", "0px")
+                    .attr("font-size", "10px")
+                    .style("transform", (segment) => `rotate(${segment.angle + Math.PI}rad)`)
+                    .style("stroke", "#ffffff")
+                    .style("font-weight", "normal")
+                    .style("font-weight", "100")
+                    .text(`${value}`)  
         })
 
     }, [ref, width, height, dataGrids]);
