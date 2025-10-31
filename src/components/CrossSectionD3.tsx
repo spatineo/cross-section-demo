@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { uniq } from "lodash";
 import { generateExampleTrajectoryCovJSON } from "../data/exampleData";
 import type { FeatureCollection, MultiPolygon } from "geojson";
@@ -28,6 +28,8 @@ interface CrossSectionD3Props {
 
 export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3Props) => {
     const ref = useRef<SVGSVGElement>(null);
+
+    const [highlightedValue, setHighlightedValue] = useState<string|null>(null);
 
     const dataGrids : CrossSectionData = useMemo(() => {
         const parameterName = Object.keys(data.parameters)[0];
@@ -109,6 +111,18 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
                 .style("fill", myColor(value))
                 .attr("transform", `scale(${xScale} ${yScale})`)
                 .attr("d", path)
+                .on('mouseover', function () {
+                    setHighlightedValue(value);
+                    d3.select(this).transition()
+                        .duration(50)
+                        .style('fill', '#944');
+                })
+                .on("mouseout", function () {
+                    setHighlightedValue(null);
+                    d3.select(this).transition()
+                        .duration(50)
+                        .style('fill', myColor(value));
+                })
 
             const ringToLineSegments = (ring: number[][]): LineSegment[] => {
                 const segments = [];
@@ -149,5 +163,13 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
 
     }, [ref, width, height, dataGrids]);
 
-   return <svg width={width} height={height} ref={ref} style={isLoading ? {'filter': 'saturate(0)'} : {}}/>;
+
+    return (
+        <>
+            <div style={{position: 'relative'}}>
+                <svg width={width} height={height} ref={ref} style={isLoading ? {'filter': 'saturate(0)'} : {}}/>
+                {highlightedValue !== null && <p style={{position: 'absolute', bottom: '5px', left: '10px', background: '#dbb', color: '#222', padding: '4px', borderRadius: '3px', fontSize: '80%', pointerEvents: 'none' }}>Value: {highlightedValue}</p>}
+            </div>
+        </>
+    )
 };
