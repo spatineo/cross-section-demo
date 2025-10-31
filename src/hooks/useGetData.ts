@@ -42,7 +42,7 @@ interface FetchDataParameters {
         'data',
         {
             parameter: string|null,
-            coordsWKT: string,
+            coordsWKT: string|null,
             mode: 'COARSE' | 'FULL',
             selectedInstance: any,
             baseurl: string
