@@ -140,6 +140,6 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
     }, [coordsWKT, translating, vectorSource, debouncedSetCoords]);
 
     return (
-        <div ref={ref} style={{width: '500px', height: '100%'}}/>
+        <div ref={ref} style={{width: '500px', height: '680px'}}/>
     )
 }

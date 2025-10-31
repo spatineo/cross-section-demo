@@ -12,7 +12,7 @@ interface UseGetData {
 interface UseGetDataParameters {
     baseurl: string,
     parameter: string|null,
-    coordsWKT: string,
+    coordsWKT: string|null,
     coarseData: boolean
 }
 
@@ -53,7 +53,7 @@ interface FetchDataParameters {
 async function fetchData({ queryKey }: FetchDataParameters) {
     const { parameter, coordsWKT, mode, selectedInstance, baseurl } = queryKey[1];
 
-    if (!selectedInstance || !parameter) return null;
+    if (!selectedInstance || !parameter || !coordsWKT) return null;
 
     const datetime = selectedInstance ? selectedInstance.extent.temporal.interval[0][0]! : null;
 
