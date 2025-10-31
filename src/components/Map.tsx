@@ -1,11 +1,13 @@
 import { Feature, Map, View } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { OSM } from "ol/source";
-import {defaults as defaultInteractions} from 'ol/interaction/defaults';
 import WKT from 'ol/format/WKT';
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Translate from 'ol/interaction/Translate';
 import Draw from 'ol/interaction/Draw';
+import DragPan from 'ol/interaction/DragPan';
+import MouseWheelZoom from 'ol/interaction/MouseWheelZoom';
+import PinchZoom from 'ol/interaction/PinchZoom';
 
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
@@ -28,7 +30,9 @@ interface MapComponentProps {
 export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
     const ref = useRef<HTMLDivElement>(null);
     const [translating, setTranslating] = useState(false);
+    const [drawing, setDrawing] = useState(false);
     const [vectorSource, setVectorSource] = useState<VectorSource|null>(null);
+    const [drawControl, setDrawControl] = useState<Draw|null>(null);
 
     const debouncedSetCoords = useMemo(() => {
         return debounce((feature: Feature) => {
@@ -40,7 +44,7 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
 
             setCoordsWKT(wkt);
         }, 100, { maxWait: 250 })
-    }, [setCoordsWKT])
+    }, [setCoordsWKT]);
 
     useEffect(() => {
         if (!ref.current) return;
@@ -60,7 +64,7 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
                     new Style({
                         geometry: new MultiPoint((feature.getGeometry() as LineString).getCoordinates()),
                         image: new Circle({
-                            radius: 5,
+                            radius: 3,
                             fill: new Fill({
                                 color: '#aa0000dd'
                             })
@@ -75,12 +79,17 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
             type: "LineString",
         });
 
+        setDrawing(true);
+        draw.setActive(true);
+
         const translate = new Translate({
             layers: [vectorLayer]
         });
 
         const mapObject: Map = new Map({
-            interactions: defaultInteractions().extend([translate, draw]),
+            interactions: // [translate, draw],
+                [new DragPan(), new MouseWheelZoom(), new PinchZoom(), translate, draw],
+                // defaultInteractions().extend([translate, draw]),
             view: new View({
                 projection: 'EPSG:3857',
                 center: [2191602, 9461681],
@@ -97,6 +106,7 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
 
         mapObject.setTarget(ref.current);
         setVectorSource(vectorSource);
+        setDrawControl(draw);
 
         const evtKeys : EventsKey[] = [];
 
@@ -113,16 +123,25 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
 
         // Draw events
         evtKeys.push(draw.on('drawend', (evt) => {
+            draw.setActive(false);
+            setDrawing(false);
             debouncedSetCoords(evt.feature);
+            evt.preventDefault();
         }));
 
         return () => {
             evtKeys.forEach(unByKey);
             setVectorSource(null);
+            setDrawControl(null);
             mapObject.setTarget(undefined);
             mapObject.dispose();
         }
     }, [ref, debouncedSetCoords]);
+
+    const startDraw = useCallback(() => {
+        drawControl?.setActive(true);
+        setDrawing(true);
+    }, [drawControl])
 
     useEffect(() => {
         if (!vectorSource || !coordsWKT || translating) return;
@@ -140,6 +159,10 @@ export const MapComponent = ({coordsWKT, setCoordsWKT} : MapComponentProps) => {
     }, [coordsWKT, translating, vectorSource, debouncedSetCoords]);
 
     return (
-        <div ref={ref} style={{width: '500px', height: '680px'}}/>
+        <>
+            <div ref={ref} style={{ width: '500px', height: '680px', position: 'relative', zIndex: 5 }}>
+                <button onClick={() => startDraw()} style={{ position: 'absolute', right: '5px', top: '5px', zIndex: 10, outline: '1.5px solid #bbb', display: drawing ? 'none' : 'inline-block' }} >Draw</button>
+            </div>
+        </>
     )
 }
