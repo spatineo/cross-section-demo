@@ -4,7 +4,7 @@ import { uniq } from "lodash";
 import { generateExampleTrajectoryCovJSON } from "../data/exampleData";
 import type { FeatureCollection, MultiPolygon } from "geojson";
 import type { LineSegment } from "../types";
-import { cullPoints } from "../util/GreedyIterativeCulling";
+import { cullPointsUniformGrid } from "../util/CullPointsCloseToEachOther";
 
 interface Value {
     value: number;
@@ -129,7 +129,8 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
 
         });
 
-        const culledLineSegments = cullPoints(allLineSegments, xScale, yScale, 60);
+        const culledLineSegments = cullPointsUniformGrid(allLineSegments);
+
         svg
             .selectAll('line-segments')
             .data(culledLineSegments)
