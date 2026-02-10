@@ -1,18 +1,11 @@
 import * as d3 from "d3";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { uniq } from "lodash";
 import { generateExampleTrajectoryCovJSON } from "../data/exampleData";
 import type { FeatureCollection, MultiPolygon } from "geojson";
 import type { LineSegment } from "../types";
 import { cullPointsUniformGrid } from "../util/CullPointsCloseToEachOther";
 
-interface Value {
-    value: number;
-    [id: string]: number|string;
-}
-
 interface CrossSectionData {
-    values: Value[],
     gridWidth: number,
     gridHeight: number,
     grid: number[],
@@ -34,38 +27,23 @@ export const CrossSectionD3 = ({data, isLoading, width, height} : CrossSectionD3
     const dataGrids : CrossSectionData = useMemo(() => {
         const parameterName = Object.keys(data.parameters)[0];
 
-        const values : Value[] = data.coverages.flatMap((cov: any) => {
-            const range = cov.ranges[parameterName];
-            // TODO: instead of `composite`, this should be relative to the axisNames in range
-            const axes = cov.domain.axes.composite;
+        const gridWidth = data.coverages[0].domain.axes.composite.values.length;
+        const gridHeight = data.coverages.length;
 
-            return range.values.map((value: number|null, idx: number) => {
-                return {
-                    value,
-                    ...axes.coordinates.reduce((memo: { [id: string]: string|number }, axis: string, axisIdx: number) => ({
-                        ...memo,
-                        [axis]: axes.values[idx][axisIdx]
-                    }), {} as { [id: string]: string|number })
-                };
-            }).filter((v: { [id: string]: string|number }) => v.value !==null) as Value[];
+        const grid = data.coverages.flatMap((cov: any) => {
+            const range = cov.ranges[parameterName];
+            return range.values;
         });
 
-        const width = uniq(values.map(v => v.x)).length;
-        const height = uniq(values.map(v => v.z)).length;
-
-        // NOTE! The response from FMI is already sorted in the order we assume the data should be sorted
-        const grid = values.map(v => v.value);
-
         const contours = d3.contours()
-            .size([width, height])
+            .size([gridWidth, gridHeight])
             .smooth(true);
         
         const polygons = contours(grid);
 
         return {
-            values,
-            gridWidth: width,
-            gridHeight: height,
+            gridWidth,
+            gridHeight,
             grid,
             featureCollection: {
                 type: "FeatureCollection",
